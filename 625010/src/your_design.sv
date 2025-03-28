@@ -87,33 +87,35 @@ module ecc_encoder (
     end
 endmodule
 
-module ecc_decoder (
-    input  logic [31:0] data_in,
-    input  logic [6:0]  parity_in,
-    output logic [31:0] corrected_data,
-    output logic        error_detected,
-    output logic        error_corrected
+module ecc_encoder (
+    input  [7:0] data_in,   // 8-bit input data
+    output [3:0] parity_out // 4-bit ECC parity output
 );
+    assign parity_out[0] = data_in[0] ^ data_in[1] ^ data_in[3] ^ data_in[4] ^ data_in[6];
+    assign parity_out[1] = data_in[0] ^ data_in[2] ^ data_in[3] ^ data_in[5] ^ data_in[6];
+    assign parity_out[2] = data_in[1] ^ data_in[2] ^ data_in[3] ^ data_in[7];
+    assign parity_out[3] = data_in[4] ^ data_in[5] ^ data_in[6] ^ data_in[7];
+endmodule
 
-    logic [6:0] syndrome;
-    logic [31:0] data_corrected;
-    logic error;
+module ecc_decoder (
+    input  [7:0] data_in,       // 8-bit input data
+    input  [3:0] parity_in,     // Received parity bits
+    output [3:0] syndrome,      // Error syndrome
+    output reg error_detected,  // Error flag
+    output reg [7:0] corrected_data // Corrected data output
+);
+    assign syndrome[0] = parity_in[0] ^ data_in[0] ^ data_in[1] ^ data_in[3] ^ data_in[4] ^ data_in[6];
+    assign syndrome[1] = parity_in[1] ^ data_in[0] ^ data_in[2] ^ data_in[3] ^ data_in[5] ^ data_in[6];
+    assign syndrome[2] = parity_in[2] ^ data_in[1] ^ data_in[2] ^ data_in[3] ^ data_in[7];
+    assign syndrome[3] = parity_in[3] ^ data_in[4] ^ data_in[5] ^ data_in[6] ^ data_in[7];
 
-    // Compute Syndrome
-    always_comb begin
-        syndrome = parity_in ^ (^{data_in[0], data_in[1], data_in[3], data_in[4], data_in[6], 
-                                 data_in[8], data_in[10], data_in[11], data_in[13], data_in[15], 
-                                 data_in[17], data_in[19], data_in[21], data_in[23], data_in[25], 
-                                 data_in[26], data_in[28], data_in[30]});
-
-        error_detected = |syndrome;
-        error_corrected = (syndrome != 7'b0000000);
-
-        data_corrected = data_in;
-        if (error_corrected) begin
-            data_corrected[syndrome] = ~data_corrected[syndrome]; // Flip bit to correct error
+    always @(*) begin
+        if (syndrome != 4'b0000) begin
+            error_detected = 1'b1;
+            corrected_data = data_in; // No correction applied in this simple example
+        end else begin
+            error_detected = 1'b0;
+            corrected_data = data_in;
         end
     end
-
-    assign corrected_data = data_corrected;
 endmodule
