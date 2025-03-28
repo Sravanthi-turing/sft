@@ -1,7 +1,7 @@
 module mppt_controller (
     input wire clk, rst_n,              
     input wire [15:0] v_in, i_in,        
-    output reg [7:0] pwm_out  // No need for an assign statement now  
+    output reg [7:0] pwm_out    
 );
 
     reg signed [31:0] power, prev_power;  
