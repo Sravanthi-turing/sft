@@ -1,10 +1,11 @@
-module tb_high_speed_bus_ecc();
-    logic clk;
-    logic reset_n;
-    logic valid;
-    logic [31:0] data_in;
-    logic [38:0] data_out;
-    logic ecc_error;
+
+module tb_high_speed_bus_ecc;
+    reg clk;
+    reg reset_n;
+    reg valid;
+    reg [31:0] data_in;
+    wire [38:0] data_out;
+    wire ecc_error;
     
     high_speed_bus_ecc uut (
         .clk(clk),
