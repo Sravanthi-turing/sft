@@ -13,7 +13,7 @@ module scalable_data_structure_tb;
   string out_src, out_dest;
   bit [127:0] out_payload;
 
-  // Instantiate the DUT 
+  // Instantiate the DUT
   scalable_data_structure dut (
       .clk(clk),
       .rst_n(rst_n),
@@ -33,8 +33,10 @@ module scalable_data_structure_tb;
 
   // Clock generation
   always #5 clk = ~clk;  
-
   initial begin
+      $dumpfile("/output/simulation_output.vcd");  
+      $dumpvars(0, scalable_data_structure_tb);
+
 
       // Reset sequence
       clk = 0;
@@ -44,7 +46,7 @@ module scalable_data_structure_tb;
       #20;
       rst_n = 1;
 
-      // Test case: Push large number of packets
+      // Test case: large number of packets
       for (int i = 0; i < 1000; i++) begin
           push = 1;
           id = i;
@@ -55,7 +57,7 @@ module scalable_data_structure_tb;
       end
       push = 0;
 
-      // Check if queue is full
+      // To check if queue is full
       if (full)
           $display("[INFO] Queue reached its maximum capacity!");
 
@@ -77,7 +79,9 @@ module scalable_data_structure_tb;
           $display("[INFO] Queue is empty after processing all packets!");
 
       $display("===== TEST PASSED: Scalable Data Structure Works Correctly =====");
-      $stop;
+
+      #50;
+      $finish;
   end
 
 endmodule
