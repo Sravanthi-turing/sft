@@ -1,83 +1,44 @@
 `timescale 1ns/1ps
 
-module scalable_data_structure_tb;
+module tb_mppt_controller;
 
-  logic clk;
-  logic rst_n;
-  logic push, pop;
-  int   id;
-  string src, dest;
-  bit [127:0] payload;
-  logic empty, full;
-  int out_id;
-  string out_src, out_dest;
-  bit [127:0] out_payload;
+    reg clk, rst_n;
+    reg [15:0] v_in, i_in;
+    wire [7:0] pwm_out;
 
-  // Instantiate the DUT 
-  scalable_data_structure dut (
-      .clk(clk),
-      .rst_n(rst_n),
-      .push(push),
-      .pop(pop),
-      .id(id),
-      .src(src),
-      .dest(dest),
-      .payload(payload),
-      .empty(empty),
-      .full(full),
-      .out_id(out_id),
-      .out_src(out_src),
-      .out_dest(out_dest),
-      .out_payload(out_payload)
-  );
+    mppt_controller uut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .v_in(v_in),
+        .i_in(i_in),
+        .pwm_out(pwm_out)
+    );
 
-  // Clock generation
-  always #5 clk = ~clk;  
+    // Clock Generation 
+    always #5 clk = ~clk;
 
-  initial begin
+    initial begin
+        //  VCD Dump
+        $dumpfile("/output/simulation_output.vcd"); 
+        $dumpvars(0, tb_mppt_controller);
+        
+        // Initialize signals
+        clk = 0;
+        rst_n = 0;
+        v_in = 16'd1500; 
+        i_in = 16'd500;  
 
-      // Reset sequence
-      clk = 0;
-      rst_n = 0;
-      push = 0;
-      pop = 0;
-      #20;
-      rst_n = 1;
+        #20 rst_n = 1; 
+        #50 v_in = 16'd1600; i_in = 16'd550;
+        #50 v_in = 16'd1400; i_in = 16'd450;
+        #50 v_in = 16'd1550; i_in = 16'd500;
+        #50 v_in = 16'd1650; i_in = 16'd525;
 
-      // Test case: Push large number of packets
-      for (int i = 0; i < 1000; i++) begin
-          push = 1;
-          id = i;
-          src = $sformatf("Device_%0d", i % 100);
-          dest = $sformatf("Server_%0d", (i+1) % 10);
-          payload = $random();
-          #10;
-      end
-      push = 0;
-
-      // Check if queue is full
-      if (full)
-          $display("[INFO] Queue reached its maximum capacity!");
-
-      // Test case: Pop packets and verify order
-      for (int i = 0; i < 1000; i++) begin
-          pop = 1;
-          #10;
-          pop = 0;
-
-          // Validate FIFO behavior
-          if (out_id !== i) begin
-              $display("[ERROR] Data mismatch! Expected ID: %0d, Found: %0d", i, out_id);
-              $stop;
-          end
-      end
-
-      // Check if queue is empty
-      if (empty)
-          $display("[INFO] Queue is empty after processing all packets!");
-
-      $display("===== TEST PASSED: Scalable Data Structure Works Correctly =====");
-      $stop;
-  end
+       #50 v_in = 16'd1580; i_in = 16'd510;
+        #50 v_in = 16'd1700; i_in = 16'd540;
+        #50 v_in = 16'd1450; i_in = 16'd480;
+        
+        #100 $finish;
+    end
 
 endmodule
