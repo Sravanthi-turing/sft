@@ -1,4 +1,3 @@
-
 module tb_high_speed_bus_ecc;
     reg clk;
     reg reset_n;
@@ -19,7 +18,7 @@ module tb_high_speed_bus_ecc;
     always #5 clk = ~clk;
     
     initial begin
-        $dumpfile("high_speed_bus_ecc.vcd");
+        $dumpfile("/output/simulation_output.vcd");
         $dumpvars(0, tb_high_speed_bus_ecc);
         
         clk = 0;
