@@ -1,16 +1,19 @@
 module Vehicular_Emissions_FSM (
-    input logic clk, reset,  
-    input logic [7:0] CO2_level,  
-    output logic warning, critical  
+    input clk, reset,  
+    input [7:0] CO2_level,  
+    output reg warning, critical  
 );
 
-    typedef enum logic [1:0] {IDLE, MONITOR} state_t;
-    typedef enum logic [1:0] {NORMAL, WARN, CRITICAL} substate_t;
+    // Main FSM States
+    parameter IDLE = 2'b00, MONITOR = 2'b01;
+    reg [1:0] state, next_state;
 
-    state_t state, next_state;
-    substate_t substate, next_substate;
+    // Sub-FSM States (Emission Levels)
+    parameter NORMAL = 2'b00, WARN = 2'b01, CRITICAL = 2'b10;
+    reg [1:0] substate, next_substate;
 
-    always_ff @(posedge clk or posedge reset) begin
+    // Sequential Logic (State Transition)
+    always @(posedge clk or posedge reset) begin
         if (reset) begin
             state <= IDLE;
             substate <= NORMAL;
@@ -20,7 +23,8 @@ module Vehicular_Emissions_FSM (
         end
     end
 
-    always_comb begin
+    // Combinational Logic (Next State Logic)
+    always @(*) begin
         next_state = state;
         next_substate = substate;
         warning = 0;
