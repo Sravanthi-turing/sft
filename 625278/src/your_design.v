@@ -1,7 +1,7 @@
 module mppt_controller (
     input wire clk, rst_n,              
     input wire [15:0] v_in, i_in,        
-    output reg [7:0] pwm_out             
+    output reg [7:0] pwm_out  // No need for an assign statement now  
 );
 
     reg signed [31:0] power, prev_power;  
@@ -13,6 +13,7 @@ module mppt_controller (
             prev_power <= 0;
             prev_vin   <= 0;
             duty_cycle <= 8'd128;  
+            pwm_out    <= 8'd128;  // Initialize output
         end 
         else begin
             power <= v_in * i_in;  
@@ -32,9 +33,8 @@ module mppt_controller (
 
             prev_power <= power;
             prev_vin   <= v_in;
+            pwm_out    <= duty_cycle; // Assign duty_cycle to output inside always block
         end
     end
-
-    assign pwm_out = duty_cycle;
 
 endmodule
