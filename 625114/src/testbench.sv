@@ -15,7 +15,7 @@ module dtt_crossbar_switch_tb;
     logic [DATA_WIDTH-1:0] out_data [N_OUT-1:0];
     logic out_valid [N_OUT-1:0];
 
-    // Instantiate DUT (Direct array connections)
+    // Instantiate DUT 
     dtt_crossbar_switch #(
         .N_IN(N_IN), 
         .N_OUT(N_OUT), 
