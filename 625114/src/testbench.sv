@@ -9,24 +9,48 @@ module dtt_crossbar_switch_tb;
     logic rst_n;
     
     logic [DATA_WIDTH-1:0] in_data [N_IN];
-    logic [N_OUT-1:0] in_dest [N_IN];
+    logic [$clog2(N_OUT)-1:0] in_dest [N_IN]; 
     logic in_valid [N_IN];
     
     logic [DATA_WIDTH-1:0] out_data [N_OUT];
     logic out_valid [N_OUT];
 
-    // Instantiate DUT
-    dtt_crossbar_switch #(.N_IN(N_IN), .N_OUT(N_OUT), .DATA_WIDTH(DATA_WIDTH)) dut (
+    logic [N_IN*DATA_WIDTH-1:0] flat_in_data;
+    logic [N_IN*$clog2(N_OUT)-1:0] flat_in_dest;
+    logic [N_IN-1:0] flat_in_valid;
+    logic [N_OUT*DATA_WIDTH-1:0] flat_out_data;
+    logic [N_OUT-1:0] flat_out_valid;
+
+    always_comb begin
+        for (int i = 0; i < N_IN; i++) begin
+            flat_in_data[i*DATA_WIDTH +: DATA_WIDTH] = in_data[i];
+            flat_in_dest[i*$clog2(N_OUT) +: $clog2(N_OUT)] = in_dest[i];
+            flat_in_valid[i] = in_valid[i];
+        end
+    end
+
+
+    always_comb begin
+        for (int j = 0; j < N_OUT; j++) begin
+            out_data[j] = flat_out_data[j*DATA_WIDTH +: DATA_WIDTH];
+            out_valid[j] = flat_out_valid[j];
+        end
+    end
+
+    dtt_crossbar_switch #(
+        .N_IN(N_IN), 
+        .N_OUT(N_OUT), 
+        .DATA_WIDTH(DATA_WIDTH)
+    ) dut (
         .clk(clk),
         .rst_n(rst_n),
-        .in_data(in_data),
-        .in_dest(in_dest),
-        .in_valid(in_valid),
-        .out_data(out_data),
-        .out_valid(out_valid)
+        .in_data(flat_in_data),
+        .in_dest(flat_in_dest),
+        .in_valid(flat_in_valid),
+        .out_data(flat_out_data),
+        .out_valid(flat_out_valid)
     );
 
-    // Clock generation
     always #5 clk = ~clk;
 
     initial begin
@@ -43,6 +67,7 @@ module dtt_crossbar_switch_tb;
         end
         #20 rst_n = 1;
 
+        //  input test vectors
         #10;
         in_data[0] = 32'hAAAA_BBBB; in_dest[0] = 2; in_valid[0] = 1;
         in_data[1] = 32'hCCCC_DDDD; in_dest[1] = 2; in_valid[1] = 1;
@@ -57,7 +82,8 @@ module dtt_crossbar_switch_tb;
 
         #50;
         
-        $display("Output Data:");
+        // Display Output Data
+        $display("\n==== Crossbar Switch Output ====");
         for (int j = 0; j < N_OUT; j++) begin
             if (out_valid[j]) begin
                 $display("Output [%0d]: Data = %h", j, out_data[j]);
