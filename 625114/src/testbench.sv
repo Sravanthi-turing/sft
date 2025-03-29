@@ -8,11 +8,9 @@ module dtt_crossbar_switch_tb;
 
     logic clk;
     logic rst_n;
-
     logic [DATA_WIDTH-1:0] in_data [N_IN];
     logic [DEST_WIDTH-1:0] in_dest [N_IN];
     logic in_valid [N_IN];
-
     logic [DATA_WIDTH-1:0] out_data [N_OUT];
     logic out_valid [N_OUT];
 
@@ -35,7 +33,7 @@ module dtt_crossbar_switch_tb;
     initial begin
         $dumpfile("simulation_output.vcd");  
         $dumpvars(0, dtt_crossbar_switch_tb);
-        
+
         clk = 0;
         rst_n = 0;
         for (int i = 0; i < N_IN; i++) begin
