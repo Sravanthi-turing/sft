@@ -9,22 +9,27 @@ module crossbar_switch #(parameter N = 4, M = 4)(
 );
     reg [M-1:0] security_filter[N-1:0];
 
+    
     always @(posedge clk or posedge rst) begin
-        integer i;
-        if (rst) begin
-            grant <= 0;
-            for (i = 0; i < M; i = i + 1) begin
-                data_out[i] <= 32'b0;
-            end
-        end else begin
-            for (i = 0; i < N; i = i + 1) begin
-                if (req[i] && security_filter[i][dest[i]]) begin
-                    grant[dest[i]] <= 1;
-                    data_out[dest[i]] <= data_in[i];
-                end else begin
-                    grant[dest[i]] <= 0;
-                end
+    integer i;
+    if (rst) begin
+        grant <= 0;
+        for (i = 0; i < M; i = i + 1) begin
+            data_out[i] <= 32'b0;
+        end
+        for (i = 0; i < N; i = i + 1) begin
+            security_filter[i] <= {M{1'b1}}; 
+        end
+    end else begin
+        for (i = 0; i < N; i = i + 1) begin
+            if (req[i] && security_filter[i][dest[i]]) begin
+                grant[dest[i]] <= 1;
+                data_out[dest[i]] <= data_in[i];
+            end else begin
+                grant[dest[i]] <= 0;
             end
         end
     end
+end
+
 endmodule
