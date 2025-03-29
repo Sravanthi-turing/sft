@@ -6,11 +6,11 @@ module scalable_data_structure_tb;
   logic rst_n;
   logic push, pop;
   int   id;
-  string src, dest;
+  bit [127:0] src, dest;
   bit [127:0] payload;
   logic empty, full;
   int out_id;
-  string out_src, out_dest;
+  bit [127:0] out_src, out_dest;
   bit [127:0] out_payload;
 
   // Instantiate the DUT
@@ -33,10 +33,10 @@ module scalable_data_structure_tb;
 
   // Clock generation
   always #5 clk = ~clk;  
+  
   initial begin
       $dumpfile("/output/simulation_output.vcd");  
       $dumpvars(0, scalable_data_structure_tb);
-
 
       // Reset sequence
       clk = 0;
@@ -46,20 +46,20 @@ module scalable_data_structure_tb;
       #20;
       rst_n = 1;
 
-      // Test case: large number of packets
+      // Test case: Push packets into FIFO
       for (int i = 0; i < 1000; i++) begin
           push = 1;
           id = i;
-          src = $sformatf("Device_%0d", i % 100);
-          dest = $sformatf("Server_%0d", (i+1) % 10);
-          payload = $random();
+          src = i % 100;  // Encoding source as an integer in 128-bit format
+          dest = (i + 1) % 10;
+          payload = $random;
           #10;
       end
       push = 0;
 
-      // To check if queue is full
+      // Check if FIFO is full
       if (full)
-          $display("[INFO] Queue reached its maximum capacity!");
+          $display("[INFO] FIFO is full!");
 
       // Test case: Pop packets and verify order
       for (int i = 0; i < 1000; i++) begin
@@ -69,17 +69,17 @@ module scalable_data_structure_tb;
 
           // Validate FIFO behavior
           if (out_id !== i) begin
-              $display("[ERROR] Data mismatch! Expected ID: %0d, Found: %0d", i, out_id);
+              $display("[ERROR] Mismatch! Expected ID: %0d, Found: %0d", i, out_id);
               $stop;
           end
       end
 
-      // Check if queue is empty
+      // Check if FIFO is empty
       if (empty)
-          $display("[INFO] Queue is empty after processing all packets!");
+          $display("[INFO] FIFO is empty after all packets processed!");
 
       $display("===== TEST PASSED: Scalable Data Structure Works Correctly =====");
-
+      
       #50;
       $finish;
   end
