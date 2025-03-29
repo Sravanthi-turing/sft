@@ -1,8 +1,7 @@
-
 module tb_crossbar_switch;
     reg clk, rst;
     reg [3:0] req;
-    reg [3:0] dest[3:0];
+    reg [1:0] dest[3:0];
     reg [31:0] data_in[3:0];
     wire [31:0] data_out[3:0];
     wire [3:0] grant;
@@ -20,8 +19,6 @@ module tb_crossbar_switch;
     always #5 clk = ~clk;
     
     initial begin
-        $dumpfile("/output/simulation_out.vcd");
-        $dumpvars(0, tb_crossbar_switch);
         clk = 0; rst = 1;
         req = 4'b0000;
         dest[0] = 0; dest[1] = 1; dest[2] = 2; dest[3] = 3;
@@ -66,6 +63,27 @@ module tb_crossbar_switch;
         data_in[3] = 32'hABCDEF01;
         #10;
         
+        req = 4'b1001;
+        dest[0] = 3; dest[3] = 0;
+        data_in[0] = 32'hFFFFFFFF;
+        data_in[3] = 32'h00000000;
+        #10;
+        
+        req = 4'b0111;
+        dest[0] = 1; dest[1] = 2; dest[2] = 3;
+        data_in[0] = 32'h11111111;
+        data_in[1] = 32'h22222222;
+        data_in[2] = 32'h33333333;
+        #10;
+        
         $finish;
+    end
+    
+    always @(posedge clk) begin
+        integer i;
+        for (i = 0; i < 4; i = i + 1) begin
+            $display("Time: %0t | Req: %b | Dest[%0d]: %0d | Data In[%0d]: %h | Data Out[%0d]: %h | Grant[%0d]: %b", 
+                $time, req[i], i, dest[i], i, data_in[i], i, data_out[i], i, grant[i]);
+        end
     end
 endmodule
