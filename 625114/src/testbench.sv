@@ -30,7 +30,7 @@ module dtt_crossbar_switch_tb;
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("output/simulation_output.vcd");
+        $dumpfile("/output/simulation_output.vcd");
         $dumpvars(0, dtt_crossbar_switch_tb);
         
         // Initialize signals
