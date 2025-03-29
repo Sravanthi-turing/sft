@@ -1,83 +1,71 @@
-`timescale 1ns/1ps
 
-module scalable_data_structure_tb;
-
-  logic clk;
-  logic rst_n;
-  logic push, pop;
-  int   id;
-  string src, dest;
-  bit [127:0] payload;
-  logic empty, full;
-  int out_id;
-  string out_src, out_dest;
-  bit [127:0] out_payload;
-
-  // Instantiate the DUT 
-  scalable_data_structure dut (
-      .clk(clk),
-      .rst_n(rst_n),
-      .push(push),
-      .pop(pop),
-      .id(id),
-      .src(src),
-      .dest(dest),
-      .payload(payload),
-      .empty(empty),
-      .full(full),
-      .out_id(out_id),
-      .out_src(out_src),
-      .out_dest(out_dest),
-      .out_payload(out_payload)
-  );
-
-  // Clock generation
-  always #5 clk = ~clk;  
-
-  initial begin
-
-      // Reset sequence
-      clk = 0;
-      rst_n = 0;
-      push = 0;
-      pop = 0;
-      #20;
-      rst_n = 1;
-
-      // Test case: Push large number of packets
-      for (int i = 0; i < 1000; i++) begin
-          push = 1;
-          id = i;
-          src = $sformatf("Device_%0d", i % 100);
-          dest = $sformatf("Server_%0d", (i+1) % 10);
-          payload = $random();
-          #10;
-      end
-      push = 0;
-
-      // Check if queue is full
-      if (full)
-          $display("[INFO] Queue reached its maximum capacity!");
-
-      // Test case: Pop packets and verify order
-      for (int i = 0; i < 1000; i++) begin
-          pop = 1;
-          #10;
-          pop = 0;
-
-          // Validate FIFO behavior
-          if (out_id !== i) begin
-              $display("[ERROR] Data mismatch! Expected ID: %0d, Found: %0d", i, out_id);
-              $stop;
-          end
-      end
-
-      // Check if queue is empty
-      if (empty)
-          $display("[INFO] Queue is empty after processing all packets!");
-
-      $display("===== TEST PASSED: Scalable Data Structure Works Correctly =====");
-      $stop;
-  end
-
+module tb_crossbar_switch;
+    reg clk, rst;
+    reg [3:0] req;
+    reg [3:0] dest[3:0];
+    reg [31:0] data_in[3:0];
+    wire [31:0] data_out[3:0];
+    wire [3:0] grant;
+    
+    crossbar_switch #(.N(4), .M(4)) uut (
+        .clk(clk),
+        .rst(rst),
+        .req(req),
+        .dest(dest),
+        .data_in(data_in),
+        .data_out(data_out),
+        .grant(grant)
+    );
+    
+    always #5 clk = ~clk;
+    
+    initial begin
+        $dumpfile("/output/simulation_out.vcd");
+        $dumpvars(0, tb_crossbar_switch);
+        clk = 0; rst = 1;
+        req = 4'b0000;
+        dest[0] = 0; dest[1] = 1; dest[2] = 2; dest[3] = 3;
+        data_in[0] = 32'hA1A1A1A1;
+        data_in[1] = 32'hB2B2B2B2;
+        data_in[2] = 32'hC3C3C3C3;
+        data_in[3] = 32'hD4D4D4D4;
+        
+        #10 rst = 0;
+        
+        req = 4'b1111;
+        #10;
+        
+        dest[1] = 3;
+        #10;
+        
+        dest[0] = 2; dest[2] = 2;
+        #10;
+        
+        rst = 1;
+        #10 rst = 0;
+        req = 4'b1010;
+        dest[1] = 1; dest[3] = 2;
+        #10;
+        
+        req = 4'b1100;
+        dest[0] = 1; dest[2] = 3;
+        data_in[0] = 32'hDEADBEEF;
+        data_in[2] = 32'hCAFEBABE;
+        #10;
+        
+        req = 4'b0110;
+        dest[1] = 0; dest[2] = 1;
+        data_in[1] = 32'h12345678;
+        data_in[2] = 32'h87654321;
+        #10;
+        
+        rst = 1;
+        #10 rst = 0;
+        req = 4'b0001;
+        dest[3] = 2;
+        data_in[3] = 32'hABCDEF01;
+        #10;
+        
+        $finish;
+    end
 endmodule
