@@ -20,7 +20,7 @@ module tb_bus_arbiter();
     );
 
     initial begin
-        $dumpfile("simulation_out.vcd");
+        $dumpfile("output/simulation_out.vcd");
         $dumpvars(0, tb_bus_arbiter);
         
         clk = 0;
