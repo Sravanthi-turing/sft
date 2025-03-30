@@ -1,83 +1,101 @@
 `timescale 1ns/1ps
 
-module scalable_data_structure_tb;
+module bus_arbiter #(
+    parameter NUM_MASTERS = 4,
+    parameter DATA_WIDTH  = 32
+)(
+    input  wire                     clk,
+    input  wire                     reset,
+    input  wire [NUM_MASTERS-1:0]   req,
+    output reg  [NUM_MASTERS-1:0]   grant,
+    input  wire                     config_wr,
+    input  wire [1:0]               config_addr,
+    input  wire [7:0]               config_data
+);
 
-  logic clk;
-  logic rst_n;
-  logic push, pop;
-  int   id;
-  string src, dest;
-  bit [127:0] payload;
-  logic empty, full;
-  int out_id;
-  string out_src, out_dest;
-  bit [127:0] out_payload;
+    reg [1:0] num_masters;
+    reg [4:0] arb_counter;
+    integer i;
 
-  // Instantiate the DUT 
-  scalable_data_structure dut (
-      .clk(clk),
-      .rst_n(rst_n),
-      .push(push),
-      .pop(pop),
-      .id(id),
-      .src(src),
-      .dest(dest),
-      .payload(payload),
-      .empty(empty),
-      .full(full),
-      .out_id(out_id),
-      .out_src(out_src),
-      .out_dest(out_dest),
-      .out_payload(out_payload)
-  );
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            num_masters <= NUM_MASTERS;
+            arb_counter <= 0;
+        end else if (config_wr) begin
+            case (config_addr)
+                2'b00: num_masters <= config_data[1:0];
+            endcase
+        end else begin
+            grant <= 0;
+            for (i = 0; i < num_masters; i = i + 1) begin
+                if (req[(arb_counter + i) % num_masters]) begin
+                    grant[(arb_counter + i) % num_masters] <= 1;
+                    arb_counter <= (arb_counter + i + 1) % num_masters;
+                    break;
+                end
+            end
+        end
+    end
 
-  // Clock generation
-  always #5 clk = ~clk;  
+endmodule
 
-  initial begin
+module tb_bus_arbiter;
+    parameter NUM_MASTERS = 4;
+    reg clk, reset, config_wr;
+    reg [NUM_MASTERS-1:0] req;
+    wire [NUM_MASTERS-1:0] grant;
+    reg [1:0] config_addr;
+    reg [7:0] config_data;
 
-      // Reset sequence
-      clk = 0;
-      rst_n = 0;
-      push = 0;
-      pop = 0;
-      #20;
-      rst_n = 1;
+    bus_arbiter #(.NUM_MASTERS(NUM_MASTERS)) uut (
+        .clk(clk),
+        .reset(reset),
+        .req(req),
+        .grant(grant),
+        .config_wr(config_wr),
+        .config_addr(config_addr),
+        .config_data(config_data)
+    );
 
-      // Test case: Push large number of packets
-      for (int i = 0; i < 1000; i++) begin
-          push = 1;
-          id = i;
-          src = $sformatf("Device_%0d", i % 100);
-          dest = $sformatf("Server_%0d", (i+1) % 10);
-          payload = $random();
-          #10;
-      end
-      push = 0;
+    initial begin
+      $dumpfile("output/simulation_out.vcd");
+        $dumpvars(0, tb_bus_arbiter);
+        
+        clk = 0;
+        reset = 1;
+        req = 4'b0000;
+        config_wr = 0;
+        config_addr = 2'b00;
+        config_data = 8'b00000000;
+        
+        #10 reset = 0;
+        
+        // Test Case 1: Single request
+        #5 req = 4'b0001;
+        #10 req = 4'b0000;
+        
+        // Test Case 2: Multiple requests, round-robin arbitration
+        #5 req = 4'b1010;
+        #10 req = 4'b0101;
+        
+        // Test Case 3: Changing number of masters dynamically
+        #10 config_wr = 1;
+        config_addr = 2'b00;
+        config_data = 8'b00000010;
+        #5 config_wr = 0;
+        
+        // Test Case 4: Single master request after configuration change
+        #10 req = 4'b0010;
+        #10 req = 4'b1000;
+        
+        // Test Case 5: Reset behavior check
+        #10 reset = 1;
+        #10 reset = 0;
+        req = 4'b1111;
+        
+        #50 $finish;
+    end
 
-      // Check if queue is full
-      if (full)
-          $display("[INFO] Queue reached its maximum capacity!");
-
-      // Test case: Pop packets and verify order
-      for (int i = 0; i < 1000; i++) begin
-          pop = 1;
-          #10;
-          pop = 0;
-
-          // Validate FIFO behavior
-          if (out_id !== i) begin
-              $display("[ERROR] Data mismatch! Expected ID: %0d, Found: %0d", i, out_id);
-              $stop;
-          end
-      end
-
-      // Check if queue is empty
-      if (empty)
-          $display("[INFO] Queue is empty after processing all packets!");
-
-      $display("===== TEST PASSED: Scalable Data Structure Works Correctly =====");
-      $stop;
-  end
+    always #5 clk = ~clk;
 
 endmodule
