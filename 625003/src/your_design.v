@@ -14,6 +14,8 @@ module bus_arbiter #(
 
     reg [1:0] num_masters;
     reg [1:0] arb_counter;
+    integer i;
+
     
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -28,7 +30,6 @@ module bus_arbiter #(
         end 
         else begin
             grant <= 0; 
-            integer i;
             for (i = 0; i < num_masters; i = i + 1) begin
                 if (req[(arb_counter + i) % num_masters]) begin
                     grant[(arb_counter + i) % num_masters] <= 1;
