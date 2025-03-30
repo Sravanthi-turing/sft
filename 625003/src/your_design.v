@@ -30,13 +30,15 @@ always @(posedge clk or posedge reset) begin
     end else begin
         reg [NUM_MASTERS-1:0] temp_grant;
         temp_grant = 0;
+        
         for (i = 0; i < num_masters; i = i + 1) begin
             if (req[(arb_counter + i) % num_masters]) begin
                 temp_grant[(arb_counter + i) % num_masters] = 1;
                 arb_counter <= (arb_counter + i + 1) % num_masters;
-                break;
+                i = num_masters;
             end
         end
+        
         grant <= temp_grant;
     end
 end
