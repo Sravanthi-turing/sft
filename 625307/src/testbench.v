@@ -1,6 +1,5 @@
 `timescale 1ns/1ps
 
-
 module tb_mimo_dsp;
     parameter N = 4;
     parameter DATA_WIDTH = 16;
@@ -27,12 +26,14 @@ module tb_mimo_dsp;
         
         #10 data_in = {16'h0010, 16'h0020, 16'h0030, 16'h0040};
         #10 data_in = {16'h0A0A, 16'h0B0B, 16'h0C0C, 16'h0D0D};
+        #10 data_in = {16'hFFFF, 16'hFFFE, 16'hFFFD, 16'hFFFC}; 
+        #10 data_in = {16'h8000, 16'h7FFF, 16'h0000, 16'h0001}; 
+        #10 data_in = {16'h1234, 16'h5678, 16'h9ABC, 16'hDEF0}; 
+        #10 rst = 1; #5 rst = 0; // reset
+        #10 data_in = {16'h1357, 16'h2468, 16'h369C, 16'h48AF}; 
         #20;
         
         $finish;
     end
 
-    always @(posedge clk) begin
-        $display("Time: %0t | Data In: %h | Data Out: %h", $time, data_in, data_out);
-    end
-endmodule
+    endmodule
