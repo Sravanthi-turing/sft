@@ -1,5 +1,3 @@
-
-// Testbench
 `timescale 1ns / 1ps
 module tb_SensorInterface;
     reg clk, rst, data_valid;
@@ -18,16 +16,14 @@ module tb_SensorInterface;
 
     initial begin
         $dumpfile("output/simulation_output.vcd");
-      $dumpvars(0, tb_SensorInterface);
-        
+        $dumpvars(0, tb_SensorInterface);
+            always #5 clk = ~clk;
+
         clk = 0;
         rst = 1;
         data_valid = 0;
         sensor_data = 0;
         #10 rst = 0;
-
-            always #5 clk = ~clk;
-
         
         #10 data_valid = 1; sensor_data = 16'h20;
         #10 data_valid = 0;
