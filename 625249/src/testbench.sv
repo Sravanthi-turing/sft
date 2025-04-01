@@ -1,5 +1,4 @@
-`timescale 1ns/1ps
-module tb_ai_cache;
+module ai_cache_testbench;
   parameter ADDR_WIDTH = 32;
   parameter DATA_WIDTH = 128;
   parameter CACHE_SIZE = 1024;
@@ -31,8 +30,8 @@ module tb_ai_cache;
   int cache_misses = 0;
 
   initial begin
-    $dumpfile("output/simulation_output.vcd");
-    $dumpvars(0, tb_ai_cache);
+    $dumpfile("ai_cache_testbench.vcd");
+    $dumpvars(0, ai_cache_testbench);
 
     clk = 0;
     reset = 1;
