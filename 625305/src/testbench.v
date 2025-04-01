@@ -25,24 +25,22 @@ module tb_SensorInterface;
         data_valid = 0;
         sensor_data = 0;
         #10 rst = 0;
+
+            always #5 clk = ~clk;
+
         
-        // Test Case 1: Normal sensor data input
         #10 data_valid = 1; sensor_data = 16'h20;
         #10 data_valid = 0;
         
-        // Test Case 2: Edge case - sensor data near threshold
         #20 data_valid = 1; sensor_data = 16'h80;
         #10 data_valid = 0;
         
-        // Test Case 3: Extreme low value
         #20 data_valid = 1; sensor_data = 16'h00;
         #10 data_valid = 0;
         
-        // Test Case 4: Extreme high value
         #20 data_valid = 1; sensor_data = 16'hFF;
         #10 data_valid = 0;
         
-        // Test Case 5: Continuous valid data
         #20 data_valid = 1; sensor_data = 16'h40;
         #10 sensor_data = 16'h50;
         #10 sensor_data = 16'h60;
@@ -51,5 +49,4 @@ module tb_SensorInterface;
         #50 $finish;
     end
 
-    always #5 clk = ~clk;
 endmodule
