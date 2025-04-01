@@ -1,5 +1,6 @@
+`timescale 1ns / 1ps
 
-module cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024) (
+module ai_cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024) (
   input logic clk,
   input logic reset,
   input logic read_en,
@@ -9,33 +10,36 @@ module cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024) (
   output logic [DATA_WIDTH-1:0] read_data,
   output logic hit
 );
-  
+
   typedef struct packed {
     logic valid;
     logic [ADDR_WIDTH-1:0] tag;
     logic [DATA_WIDTH-1:0] data;
   } cache_line_t;
-  
+
   cache_line_t cache_mem [CACHE_SIZE];
-  
+  logic [31:0] index;  
+
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
       for (int i = 0; i < CACHE_SIZE; i++) begin
         cache_mem[i].valid <= 0;
       end
     end else if (write_en) begin
-      cache_mem[$unsigned(addr) % CACHE_SIZE].valid <= 1;
-      cache_mem[$unsigned(addr) % CACHE_SIZE].tag <= addr;
-      cache_mem[$unsigned(addr) % CACHE_SIZE].data <= write_data;
+      index = addr % CACHE_SIZE;
+      cache_mem[index].valid <= 1;
+      cache_mem[index].tag <= addr;
+      cache_mem[index].data <= write_data;
     end
   end
-  
+
   always_ff @(posedge clk) begin
     hit <= 0;
     if (read_en) begin
-      if (cache_mem[$unsigned(addr) % CACHE_SIZE].valid && cache_mem[$unsigned(addr) % CACHE_SIZE].tag == addr) begin
+      index = addr % CACHE_SIZE;
+      if (cache_mem[index].valid && cache_mem[index].tag == addr) begin
         hit <= 1;
-        read_data <= cache_mem[$unsigned(addr) % CACHE_SIZE].data;
+        read_data <= cache_mem[index].data;
       end else begin
         read_data <= '0;
       end
