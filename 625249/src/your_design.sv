@@ -19,6 +19,7 @@ module ai_cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024
 
   cache_line_t cache_mem [CACHE_SIZE];
   logic [31:0] index;  
+  integer i;
 
   always @(posedge clk or posedge reset) begin
     if (reset) begin
