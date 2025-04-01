@@ -1,4 +1,4 @@
-module data_transmission_system (
+module data_transmission_channel (
     input [7:0] data_in,
     input inject_error,
     output reg [7:0] received_data,
@@ -14,8 +14,8 @@ module data_transmission_system (
     
     assign encoded_data = {p3, p2, p1, data_in};
     
-    wire [10:0] received_data_encoded;
-    
+    reg [10:0] received_data_encoded;
+
     always @(*) begin
         if (inject_error) begin
             received_data_encoded = encoded_data ^ (1 << 4);
@@ -24,15 +24,13 @@ module data_transmission_system (
         end
     end
 
-    wire [7:0] data_in_received;
-    wire error_detected_internal;
-    wire p1_check, p2_check, p3_check;
-    wire [2:0] error_position;
-
     wire p1_received = received_data_encoded[10];
     wire p2_received = received_data_encoded[9];
     wire p3_received = received_data_encoded[8];
     wire [7:0] data_in_received = received_data_encoded[7:0];
+
+    wire p1_check, p2_check, p3_check;
+    wire [2:0] error_position;
 
     assign p1_check = data_in_received[0] ^ data_in_received[1] ^ data_in_received[3] ^ data_in_received[4] ^ data_in_received[6] ^ p1_received;
     assign p2_check = data_in_received[0] ^ data_in_received[2] ^ data_in_received[3] ^ data_in_received[5] ^ data_in_received[6] ^ p2_received;
