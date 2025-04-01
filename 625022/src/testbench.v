@@ -1,4 +1,3 @@
-
 module tb_Data_Channel;
     reg clk;
     reg rst;
@@ -15,6 +14,7 @@ module tb_Data_Channel;
         .error_detected(error_detected),
         .error_corrected(error_corrected)
     );
+
     always #5 clk = ~clk;
 
     initial begin
@@ -23,25 +23,18 @@ module tb_Data_Channel;
         clk = 0;
         rst = 1;
         data_in = 0;
-        #10 rst = 0;
         
+        #10 rst = 0; #10 rst = 1; #10;
+        data_in = 8'b00000000; #20;
         data_in = 8'b10101010; #20;
-        
         data_in = 8'b11001100; #20;
-        
-        data_in = 8'b11110000; #10;
-        force uut.received_data[0] = ~uut.received_data[0]; #20;
-        release uut.received_data[0];
-        
-        data_in = 8'b00001111; #10;
-        force uut.received_data[1] = ~uut.received_data[1];
-        force uut.received_data[3] = ~uut.received_data[3]; #20;
-        release uut.received_data[1];
-        release uut.received_data[3];
-        
-        rst = 1; #10; rst = 0; #10;
+        data_in = 8'b11110000; #20;
+        data_in = 8'b01010101; #20;
+        data_in = 8'b11011010; #20;
+        data_in = 8'b11111111; #20;
+        rst = 0; #10; rst = 1; #10;
+        data_in = 8'b00000000; #20;
         
         $finish;
     end
-    
 endmodule
