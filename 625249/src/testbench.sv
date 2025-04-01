@@ -1,5 +1,4 @@
 `timescale 1ns/1ps
-
 module cache_testbench;
   
   parameter ADDR_WIDTH = 32;
@@ -33,14 +32,15 @@ module cache_testbench;
   int cache_misses = 0;
   
   initial begin
-    $dumpfile("output/simulation_output.vcd");
+    $dumpfile("cache_testbench.vcd");
     $dumpvars(0, cache_testbench);
+    
     clk = 0;
     reset = 1;
     read_en = 0;
     write_en = 0;
-    addr = 0;
-    write_data = 0;
+    addr = '0;
+    write_data = '0;
     
     #10 reset = 0;
     
