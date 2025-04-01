@@ -1,29 +1,22 @@
+
+
 module tb_data_transmission_channel;
-    reg clk;
-    reg rst;
+
     reg [7:0] data_in;
     reg inject_error;
     wire [7:0] received_data;
     wire error_detected;
 
     data_transmission_channel uut (
-        .clk(clk),
-        .rst(rst),
         .data_in(data_in),
         .inject_error(inject_error),
         .received_data(received_data),
         .error_detected(error_detected)
     );
 
-    always #5 clk = ~clk;
-
     initial begin
         $dumpfile("output/simulation_output.vcd");
         $dumpvars(0, tb_data_transmission_channel);
-        
-        clk = 0;
-        rst = 1;
-        #10 rst = 0;
 
         data_in = 8'b10101010; inject_error = 0; #10;
         data_in = 8'b11001100; inject_error = 1; #10;
@@ -36,12 +29,7 @@ module tb_data_transmission_channel;
         data_in = 8'b11111111; inject_error = 1; #10;
         data_in = 8'b00011100; inject_error = 0; #10;
 
-        rst = 1;
-        #10 rst = 0;
-
-        data_in = 8'b11001100; inject_error = 0; #10;
-        data_in = 8'b00001111; inject_error = 1; #10;
-
         $finish;
     end
+
 endmodule
