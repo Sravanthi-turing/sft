@@ -46,7 +46,7 @@ module Data_Channel #(parameter DATA_WIDTH = 8, ECC_WIDTH = 5) (
                 5'b00100: corrected_data[2] = ~corrected_data[2];
                 5'b01000: corrected_data[3] = ~corrected_data[3];
                 5'b10000: corrected_data[4] = ~corrected_data[4];
-                default: error_corrected = 1; 
+                default: error_corrected = 1;
             endcase
             
             data_out <= corrected_data;
