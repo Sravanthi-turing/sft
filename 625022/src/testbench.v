@@ -6,7 +6,10 @@ module tb_Data_Channel;
     wire error_detected;
     wire error_corrected;
     
-    Data_Channel uut (
+    Data_Channel #(
+        .DATA_WIDTH(8),
+        .ECC_WIDTH(5)
+    ) uut (
         .clk(clk),
         .rst(rst),
         .data_in(data_in),
