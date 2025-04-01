@@ -13,7 +13,7 @@ module tb_data_transmission_channel;
     );
 
     initial begin
-        $dumpfile("ecc_waveform.vcd");
+        $dumpfile("output/simulation_output.vcd");
         $dumpvars(0, tb_data_transmission_channel);
 
         data_in = 8'b10101010; inject_error = 0; #10;
