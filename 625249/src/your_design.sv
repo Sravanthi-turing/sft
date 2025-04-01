@@ -15,7 +15,7 @@ module cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024) (
     logic [DATA_WIDTH-1:0] data;
   } cache_line_t;
   
-  cache_line_t cache_mem[CACHE_SIZE];
+  cache_line_t cache_mem [0:CACHE_SIZE-1];
   
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
@@ -36,8 +36,10 @@ module cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024) (
         read_data <= cache_mem[addr % CACHE_SIZE].data;
       end else begin
         hit <= 0;
-        read_data <= 0;
+        read_data <= '0;
       end
     end
   end
 endmodule
+
+
