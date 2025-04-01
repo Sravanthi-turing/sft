@@ -1,3 +1,4 @@
+
 module tb_Data_Channel;
     reg clk;
     reg rst;
@@ -14,7 +15,8 @@ module tb_Data_Channel;
         .error_detected(error_detected),
         .error_corrected(error_corrected)
     );
-    
+    always #5 clk = ~clk;
+
     initial begin
         $dumpfile("output/simulation_output.vcd");
         $dumpvars(0, tb_Data_Channel);
@@ -28,16 +30,18 @@ module tb_Data_Channel;
         data_in = 8'b11001100; #20;
         
         data_in = 8'b11110000; #10;
-        uut.received_data[0] = ~uut.received_data[0]; #20;
+        force uut.received_data[0] = ~uut.received_data[0]; #20;
+        release uut.received_data[0];
         
         data_in = 8'b00001111; #10;
-        uut.received_data[1] = ~uut.received_data[1];
-        uut.received_data[3] = ~uut.received_data[3]; #20;
+        force uut.received_data[1] = ~uut.received_data[1];
+        force uut.received_data[3] = ~uut.received_data[3]; #20;
+        release uut.received_data[1];
+        release uut.received_data[3];
         
         rst = 1; #10; rst = 0; #10;
         
         $finish;
     end
     
-    always #5 clk = ~clk;
 endmodule
