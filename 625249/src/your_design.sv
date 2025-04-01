@@ -20,7 +20,7 @@ module ai_cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024
   cache_line_t cache_mem [CACHE_SIZE];
   logic [31:0] index;  
 
-  always_ff @(posedge clk or posedge reset) begin
+  always @(posedge clk or posedge reset) begin
     if (reset) begin
       for (int i = 0; i < CACHE_SIZE; i++) begin
         cache_mem[i].valid <= 0;
@@ -33,7 +33,7 @@ module ai_cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024
     end
   end
 
-  always_ff @(posedge clk) begin
+  always @(posedge clk) begin
     hit <= 0;
     if (read_en) begin
       index = addr % CACHE_SIZE;
