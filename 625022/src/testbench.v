@@ -1,43 +1,64 @@
-module tb_Data_Channel;
-    reg clk;
-    reg rst;
+
+
+module tb_data_transmission_system;
+
     reg [7:0] data_in;
-    wire [7:0] data_out;
+    reg inject_error;
+    wire [7:0] received_data;
     wire error_detected;
-    wire error_corrected;
-    
-    Data_Channel #(
-        .DATA_WIDTH(8),
-        .ECC_WIDTH(5)
-    ) uut (
-        .clk(clk),
-        .rst(rst),
+
+    data_transmission_system uut (
         .data_in(data_in),
-        .data_out(data_out),
-        .error_detected(error_detected),
-        .error_corrected(error_corrected)
+        .inject_error(inject_error),
+        .received_data(received_data),
+        .error_detected(error_detected)
     );
 
-    always #5 clk = ~clk;
-
     initial begin
-        $dumpfile("output/simulation_output.vcd");
-        $dumpvars(0, tb_Data_Channel);
-        clk = 0;
-        rst = 1;
-        data_in = 0;
-        
-        #10 rst = 0; #10 rst = 1; #10;
-        data_in = 8'b00000000; #20;
-        data_in = 8'b10101010; #20;
-        data_in = 8'b11001100; #20;
-        data_in = 8'b11110000; #20;
-        data_in = 8'b01010101; #20;
-        data_in = 8'b11011010; #20;
-        data_in = 8'b11111111; #20;
-        rst = 0; #10; rst = 1; #10;
-        data_in = 8'b00000000; #20;
-        
+        $dumpfile("ecc_waveform.vcd");
+        $dumpvars(0, tb_data_transmission_system);
+
+        data_in = 8'b10101010;
+        inject_error = 0;
+        #10;
+
+        data_in = 8'b11001100;
+        inject_error = 1;
+        #10;
+
+        data_in = 8'b11110000;
+        inject_error = 0;
+        #10;
+
+        data_in = 8'b00000001;
+        inject_error = 0;
+        #10;
+
+        data_in = 8'b01010101;
+        inject_error = 1;
+        #10;
+
+        data_in = 8'b10010010;
+        inject_error = 0;
+        #10;
+
+        data_in = 8'b11100000;
+        inject_error = 1;
+        #10;
+
+        data_in = 8'b00101010;
+        inject_error = 0;
+        #10;
+
+        data_in = 8'b11111111;
+        inject_error = 1;
+        #10;
+
+        data_in = 8'b00011100;
+        inject_error = 0;
+        #10;
+
         $finish;
     end
+
 endmodule
