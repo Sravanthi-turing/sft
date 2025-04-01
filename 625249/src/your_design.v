@@ -1,54 +1,43 @@
-`timescale 1ns/1ps
-
-module scalable_data_structure (
-    input  logic        clk,         
-    input  logic        rst_n,       
-    input  logic        pop,         
-    input  int          id,          
-    input  string       src,         
-    input  string       dest,        
-    input  bit [127:0]  payload,     
-    output logic        empty,       
-    output logic        full,        
-    output int          out_id,      
-    output string       out_src,     
-    output string       out_dest,    
-    output bit [127:0]  out_payload  
+module cache #(parameter ADDR_WIDTH = 32, DATA_WIDTH = 128, CACHE_SIZE = 1024) (
+  input logic clk,
+  input logic reset,
+  input logic read_en,
+  input logic write_en,
+  input logic [ADDR_WIDTH-1:0] addr,
+  input logic [DATA_WIDTH-1:0] write_data,
+  output logic [DATA_WIDTH-1:0] read_data,
+  output logic hit
 );
-
-  // Define struct for packet storage
-  typedef struct {
-      int id;
-      string src;
-      string dest;
-      bit [127:0] payload;  
-  } packet_t;
-
-  // Dynamic queue for packet storage
-  packet_t packet_queue[$];
-
-  always_ff @(posedge clk or negedge rst_n) begin
-      if (!rst_n) begin
-          packet_queue = {};  // Clear queue on reset
-      end else begin
-          // Push packet into the queue
-          if (push) begin
-              packet_queue.push_back('{id, src, dest, payload});
-          end
-          
-          // Pop packet from the queue
-          if (pop && !packet_queue.empty()) begin
-              packet_t pkt = packet_queue.pop_front();
-              out_id      = pkt.id;
-              out_src     = pkt.src;
-              out_dest    = pkt.dest;
-              out_payload = pkt.payload;
-          end
+  
+  typedef struct packed {
+    logic valid;
+    logic [ADDR_WIDTH-1:0] tag;
+    logic [DATA_WIDTH-1:0] data;
+  } cache_line_t;
+  
+  cache_line_t cache_mem[CACHE_SIZE];
+  
+  always_ff @(posedge clk or posedge reset) begin
+    if (reset) begin
+      for (int i = 0; i < CACHE_SIZE; i++) begin
+        cache_mem[i].valid <= 0;
       end
+    end else if (write_en) begin
+      cache_mem[addr % CACHE_SIZE].valid <= 1;
+      cache_mem[addr % CACHE_SIZE].tag <= addr;
+      cache_mem[addr % CACHE_SIZE].data <= write_data;
+    end
   end
-
-  // Queue status signals
-  assign empty = (packet_queue.size() == 0);
-  assign full  = (packet_queue.size() >= 1024);  
-
+  
+  always_ff @(posedge clk) begin
+    if (read_en) begin
+      if (cache_mem[addr % CACHE_SIZE].valid && cache_mem[addr % CACHE_SIZE].tag == addr) begin
+        hit <= 1;
+        read_data <= cache_mem[addr % CACHE_SIZE].data;
+      end else begin
+        hit <= 0;
+        read_data <= 0;
+      end
+    end
+  end
 endmodule
