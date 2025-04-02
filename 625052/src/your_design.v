@@ -1,4 +1,4 @@
-module LowPowerArthmetic #(
+module LowPowerArithmetic #(
     parameter WIDTH = 8
 )(
     input  wire [WIDTH-1:0] a,
