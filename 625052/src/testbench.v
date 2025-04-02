@@ -1,83 +1,30 @@
-`timescale 1ns/1ps
-
-module scalable_data_structure_tb;
-
-  logic clk;
-  logic rst_n;
-  logic push, pop;
-  int   id;
-  string src, dest;
-  bit [127:0] payload;
-  logic empty, full;
-  int out_id;
-  string out_src, out_dest;
-  bit [127:0] out_payload;
-
-  // Instantiate the DUT 
-  scalable_data_structure dut (
-      .clk(clk),
-      .rst_n(rst_n),
-      .push(push),
-      .pop(pop),
-      .id(id),
-      .src(src),
-      .dest(dest),
-      .payload(payload),
-      .empty(empty),
-      .full(full),
-      .out_id(out_id),
-      .out_src(out_src),
-      .out_dest(out_dest),
-      .out_payload(out_payload)
-  );
-
-  // Clock generation
-  always #5 clk = ~clk;  
-
-  initial begin
-
-      // Reset sequence
-      clk = 0;
-      rst_n = 0;
-      push = 0;
-      pop = 0;
-      #20;
-      rst_n = 1;
-
-      // Test case: Push large number of packets
-      for (int i = 0; i < 1000; i++) begin
-          push = 1;
-          id = i;
-          src = $sformatf("Device_%0d", i % 100);
-          dest = $sformatf("Server_%0d", (i+1) % 10);
-          payload = $random();
-          #10;
-      end
-      push = 0;
-
-      // Check if queue is full
-      if (full)
-          $display("[INFO] Queue reached its maximum capacity!");
-
-      // Test case: Pop packets and verify order
-      for (int i = 0; i < 1000; i++) begin
-          pop = 1;
-          #10;
-          pop = 0;
-
-          // Validate FIFO behavior
-          if (out_id !== i) begin
-              $display("[ERROR] Data mismatch! Expected ID: %0d, Found: %0d", i, out_id);
-              $stop;
-          end
-      end
-
-      // Check if queue is empty
-      if (empty)
-          $display("[INFO] Queue is empty after processing all packets!");
-
-      $display("===== TEST PASSED: Scalable Data Structure Works Correctly =====");
-      $stop;
-  end
-
+module tb_LowPowerArithmetic;
+    reg [7:0] a, b;
+    reg [1:0] op;
+    wire [15:0] result;
+    
+    LowPowerArithmetic #(8) dut (.a(a), .b(b), .op(op), .result(result));
+    
+    initial begin
+        $dumpfile("output/simulation_output.vcd");
+        $dumpvars(0, tb_LowPowerArithmetic);
+        
+        a = 8'h0A; b = 8'h05; op = 2'b00; #10;
+        a = 8'h14; b = 8'h08; op = 2'b01; #10;
+        a = 8'h03; b = 8'h02; op = 2'b10; #10;
+        a = 8'hFF; b = 8'h01; op = 2'b00; #10;
+        
+        a = 8'h00; b = 8'h00; op = 2'b00; #10;
+        a = 8'hFF; b = 8'hFF; op = 2'b01; #10;
+        a = 8'h7F; b = 8'h01; op = 2'b00; #10;
+        a = 8'h80; b = 8'h80; op = 2'b10; #10;
+        a = 8'h01; b = 8'hFF; op = 2'b01; #10;
+        a = 8'hFF; b = 8'h02; op = 2'b10; #10;
+        a = 8'h00; b = 8'hFF; op = 2'b10; #10;
+        a = 8'h55; b = 8'hAA; op = 2'b10; #10;
+        a = 8'hFF; b = 8'hFF; op = 2'b10; #10;
+        a = 8'h01; b = 8'h01; op = 2'b11; #10;
+        
+        $finish;
+    end
 endmodule
