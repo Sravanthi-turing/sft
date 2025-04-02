@@ -8,7 +8,7 @@ module tb_clockmultiplier;
     reg [$clog2(MAX_MULTIPLIER)-1:0] multiplier;
     wire gated_clk; 
     
-    ConfigurableClockGating #(.MAX_MULTIPLIER(MAX_MULTIPLIER)) dut (
+    clockmultiplier #(.MAX_MULTIPLIER(MAX_MULTIPLIER)) dut (
         .clk_in(clk_in),
         .enable(enable),
         .multiplier(multiplier),
@@ -19,7 +19,7 @@ module tb_clockmultiplier;
     
     initial begin
         $dumpfile("output/simulation_output.vcd");
-        $dumpvars(0, tb_ConfigurableClockGating);
+        $dumpvars(0, tb_clockmultiplier);
         clk_in = 0;
         enable = 1;
         multiplier = 2;
